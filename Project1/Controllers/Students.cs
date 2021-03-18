@@ -20,6 +20,7 @@ namespace WebApplication1.Controllers
         public int id { get; set; }
         public string title { get; set; }
         public string body { get; set; }
+        public int userId { get; set; }
     }
     public class StudentsController : Controller
     {
@@ -29,36 +30,6 @@ namespace WebApplication1.Controllers
         {
             _logger = logger;
         }
-        private static  StudentWorks[] StudentWork = new[]
-        {
-            new StudentWorks
-            {
-                id=1,
-                title="sunt aut facere repellat provident occaecati excepturi optio reprehenderit",
-                body="quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto",
-            },
-            new StudentWorks
-            {
-                id=2,
-                title="qui est esse",
-                body="est rerum tempore vitae\nsequi sint nihil reprehenderit dolor beatae ea dolores neque\nfugiat blanditiis voluptate porro vel nihil molestiae ut reiciendis\nqui aperiam non debitis possimus qui neque nisi nulla",
-            }
-        };
-        private static Student[] Students = new[]
-            {
-            new Student
-            {
-                id=1,
-                name="Leanne Graham",
-                username="Bret"
-            },
-            new Student
-            {
-                id=2,
-                name="Ervin Howell",
-                username="Antonette",
-            },
-            };
         public IActionResult Index()
         {
             return View();
@@ -68,30 +39,55 @@ namespace WebApplication1.Controllers
 
         [HttpPost]
         public ActionResult SimplePost(int? id)
-        { 
-            return Json(Students);
-        }
-        [HttpPost]
-        public ActionResult GetCouseWord(int id=2)
         {
             string jsonString;
-
-            using (StreamReader reader = new StreamReader(Request.Body, System.Text.Encoding.UTF8))
+            using(StreamReader reader=new StreamReader(@"Models/students.json"))
             {
                 jsonString = reader.ReadToEnd();
             }
-            var deserialize = JsonSerializer.Deserialize<int>(jsonString);
-            for (int i=0;i<StudentWork.Length;i++)
+            var studentsList = JsonSerializer.Deserialize<List<Student>>(jsonString);
+            return Json(studentsList);
+        }
+        [HttpPost]
+        public ActionResult GetCouseWord(int id)
+        {
+            string jsonString;
+            string IdStudent;
+            using (StreamReader reader = new StreamReader(Request.Body, System.Text.Encoding.UTF8))
             {
-                if (StudentWork[i].id == deserialize)
+                IdStudent = reader.ReadToEnd();
+            }
+            using (StreamReader reader = new StreamReader(@"Models/studentsWorks.json"))
+            {
+                jsonString = reader.ReadToEnd();
+            }
+            var СouseWorksList = JsonSerializer.Deserialize<List<StudentWorks>>(jsonString);
+            var deserialize = JsonSerializer.Deserialize<int>(IdStudent);
+            List<StudentWorks> result = new List<StudentWorks>();
+            for (int i=0;i< СouseWorksList.Count;i++)
+            {
+                if (СouseWorksList[i].userId == deserialize)
                 {
-                    StudentWorks[] result = new StudentWorks[1];
-                    result[0] = StudentWork[i];
-                    // Я не знаю, как сделать это адекватно.Если я буду просто возращать students[0], то это будет просто объектом [],а мне в Students.js нужна конструкция [].
-                    //return Json(JsonSerializer.Serialize(StudentWork[i]));
-                    return Json(result);
+                    result.Add(СouseWorksList[i]);
                 }
             }
+            return Json(result);
+        }
+        public ActionResult NewCourseWork()
+        {
+            string jsonString;
+            string newInfo;
+            using (StreamReader reader = new StreamReader(Request.Body, System.Text.Encoding.UTF8))
+            {
+                newInfo = reader.ReadToEnd();
+            }
+            using (StreamReader reader = new StreamReader(@"Models/studentsWorks.json"))
+            {
+                jsonString = reader.ReadToEnd();
+            }
+            var СouseWorksList = JsonSerializer.Deserialize<List<StudentWorks>>(jsonString);
+            СouseWorksList.Add(JsonSerializer.Deserialize<StudentWorks>(newInfo));
+            System.IO.File.WriteAllText(@"Models/studentsWorks.json", JsonSerializer.Serialize(СouseWorksList));
             return Json(0);
         }
     }

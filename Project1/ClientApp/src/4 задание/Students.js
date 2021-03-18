@@ -1,9 +1,7 @@
 import React from 'react';
 import { Table } from 'antd';
-import { $, jQuery, ajax, data, type } from 'jquery';
 import '../App.css';
 import { inject, observer } from 'mobx-react';
-<script src='//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js'></script>;
 const columns = [
   {
     title: 'id',
@@ -32,11 +30,10 @@ class Students extends React.Component {
     todos: [],
   };
   componentDidMount = async () => {
-    this.postData().then((data) => {
+      this.postData().then((data) => {
       this.setState({
         todos: data,
       });
-      console.log(this.state.todos);
     });
   };
   switch = (value) => {
